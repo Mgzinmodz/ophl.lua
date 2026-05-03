@@ -1,66 +1,34 @@
--- MGZMODZ PREMIUM (KEY SYSTEM + UI)
+-- MGZMODZ ELITE UI (APENAS INTERFACE PERFEITA)
 
 local player = game.Players.LocalPlayer
 local UIS = game:GetService("UserInputService")
 
--- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "MGZMODZ_UI"
 
--- ================= LOGIN =================
-local login = Instance.new("Frame", gui)
-login.Size = UDim2.new(0,300,0,180)
-login.Position = UDim2.new(0.5,-150,0.5,-90)
-login.BackgroundColor3 = Color3.fromRGB(25,25,35)
+-- CONFIG DE ESTADO (NÃO RESETAR)
+local states = {}
 
-local title = Instance.new("TextLabel", login)
-title.Size = UDim2.new(1,0,0,40)
-title.Text = "MGZMODZ LOGIN"
-title.BackgroundTransparency = 1
-title.TextColor3 = Color3.new(1,1,1)
-
-local keyBox = Instance.new("TextBox", login)
-keyBox.Size = UDim2.new(0.8,0,0,35)
-keyBox.Position = UDim2.new(0.1,0,0.4,0)
-keyBox.PlaceholderText = "Digite a Key..."
-keyBox.Text = ""
-
-local enterBtn = Instance.new("TextButton", login)
-enterBtn.Size = UDim2.new(0.6,0,0,35)
-enterBtn.Position = UDim2.new(0.2,0,0.7,0)
-enterBtn.Text = "ENTRAR"
-enterBtn.BackgroundColor3 = Color3.fromRGB(0,170,255)
-
--- NOTIFICAÇÃO
-local function notify(msg)
-	local n = Instance.new("TextLabel", gui)
-	n.Size = UDim2.new(0,250,0,40)
-	n.Position = UDim2.new(0.5,-125,0.8,0)
-	n.Text = msg
-	n.BackgroundColor3 = Color3.fromRGB(40,40,50)
-	n.TextColor3 = Color3.new(1,1,1)
-	task.delay(2,function() n:Destroy() end)
-end
-
--- ================= MAIN HUB =================
+-- MAIN
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0,500,0,400)
-main.Position = UDim2.new(0.5,-250,0.5,-200)
-main.BackgroundColor3 = Color3.fromRGB(25,25,35)
-main.Visible = false
+main.Size = UDim2.new(0,520,0,420)
+main.Position = UDim2.new(0.5,-260,0.5,-210)
+main.BackgroundColor3 = Color3.fromRGB(20,20,30)
 
 -- DRAG
-local dragging, dragStart, startPos
+local drag, dragInput, start, startPos
+
 main.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
+		drag = true
+		start = input.Position
 		startPos = main.Position
 	end
 end)
 
 UIS.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - dragStart
+	if drag and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - start
 		main.Position = UDim2.new(
 			startPos.X.Scale,
 			startPos.X.Offset + delta.X,
@@ -72,20 +40,21 @@ end)
 
 UIS.InputEnded:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
+		drag = false
 	end
 end)
 
--- TOPO
+-- TOP BAR
 local top = Instance.new("Frame", main)
-top.Size = UDim2.new(1,0,0,35)
+top.Size = UDim2.new(1,0,0,40)
 top.BackgroundColor3 = Color3.fromRGB(0,170,255)
 
-local title2 = Instance.new("TextLabel", top)
-title2.Size = UDim2.new(1,-80,1,0)
-title2.Text = "MGZMODZ HUB"
-title2.BackgroundTransparency = 1
-title2.TextColor3 = Color3.new(1,1,1)
+local title = Instance.new("TextLabel", top)
+title.Size = UDim2.new(1,-100,1,0)
+title.Text = "MGZMODZ HUB"
+title.BackgroundTransparency = 1
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
 
 local close = Instance.new("TextButton", top)
 close.Size = UDim2.new(0,40,1,0)
@@ -99,98 +68,125 @@ mini.Text = "-"
 
 -- CONTENT
 local content = Instance.new("Frame", main)
-content.Size = UDim2.new(1,0,1,-70)
-content.Position = UDim2.new(0,0,0,70)
+content.Size = UDim2.new(1,0,1,-80)
+content.Position = UDim2.new(0,0,0,80)
 content.BackgroundTransparency = 1
 
+-- CLEAR
 local function clear()
 	for _,v in pairs(content:GetChildren()) do
 		v:Destroy()
 	end
 end
 
-local function option(text,y)
+-- BOTÃO (COM SALVAR ESTADO)
+local function toggle(name,y)
+	if states[name] == nil then states[name] = false end
+	
 	local btn = Instance.new("TextButton", content)
-	btn.Size = UDim2.new(0.9,0,0,30)
+	btn.Size = UDim2.new(0.9,0,0,32)
 	btn.Position = UDim2.new(0.05,0,0,y)
-	btn.Text = text.." : OFF"
-	btn.BackgroundColor3 = Color3.fromRGB(40,40,50)
+	btn.Font = Enum.Font.Gotham
+	
+	local function update()
+		btn.Text = name.." : "..(states[name] and "ON" or "OFF")
+		btn.BackgroundColor3 = states[name] and Color3.fromRGB(0,170,255) or Color3.fromRGB(40,40,55)
+	end
+	
+	update()
+	
 	btn.MouseButton1Click:Connect(function()
-		btn.Text = text.." : ON"
+		states[name] = not states[name]
+		update()
 	end)
 end
 
--- PÁGINAS
-local function aimbot()
-	clear()
-	local y=5
-	for _,v in ipairs({"Aimbot","FOV","Silent Aim","Team Check","No Recoil","Lock"}) do
-		option(v,y)
-		y+=35
-	end
-end
-
-local function visual()
-	clear()
-	local y=5
-	for _,v in ipairs({"ESP","ESP Name","ESP Box","ESP Line","ESP Health","ESP Skeleton"}) do
-		option(v,y)
-		y+=35
-	end
-end
-
-local function misc()
-	clear()
-	local y=5
-	for _,v in ipairs({"Speed","Fly","Spin","Teleport","Auto Farm","Anti AFK"}) do
-		option(v,y)
-		y+=35
-	end
-end
-
-local function mainTab()
-	clear()
-	local y=5
-	for _,v in ipairs({"Invisible","X-Ray","Full Bright","No Fog","FPS Boost","Reset UI"}) do
-		option(v,y)
-		y+=35
-	end
-end
-
 -- ABAS
-local function tab(name,x,func)
-	local b = Instance.new("TextButton", main)
-	b.Size = UDim2.new(0.25,0,0,35)
-	b.Position = UDim2.new(x,0,0,35)
-	b.Text = name
-	b.MouseButton1Click:Connect(func)
+local function createTab(name,x,func)
+	local tab = Instance.new("TextButton", main)
+	tab.Size = UDim2.new(0.25,0,0,40)
+	tab.Position = UDim2.new(x,0,0,40)
+	tab.Text = name
+	tab.BackgroundColor3 = Color3.fromRGB(30,30,45)
+	tab.Font = Enum.Font.Gotham
+	
+	tab.MouseButton1Click:Connect(func)
 end
 
-tab("Aimbot",0,aimbot)
-tab("Visual",0.25,visual)
-tab("Misc",0.5,misc)
-tab("Main",0.75,mainTab)
+-- PÁGINAS
+local function Aimbot()
+	clear()
+	local y = 5
+	for _,v in ipairs({
+		"Aimbot","FOV Circle","Silent Aim","Team Check","No Recoil","Aim Lock"
+	}) do
+		toggle(v,y)
+		y+=35
+	end
+end
 
-aimbot()
+local function Visual()
+	clear()
+	local y = 5
+	for _,v in ipairs({
+		"ESP","ESP Name","ESP Box","ESP Line","ESP Health","ESP Skeleton"
+	}) do
+		toggle(v,y)
+		y+=35
+	end
+end
 
--- CONTROLES
+local function Misc()
+	clear()
+	local y = 5
+	for _,v in ipairs({
+		"Speed","Fly","Spin","Teleport","Auto Farm","Anti AFK"
+	}) do
+		toggle(v,y)
+		y+=35
+	end
+end
+
+local function MainTab()
+	clear()
+	local y = 5
+	for _,v in ipairs({
+		"Invisible","X-Ray","Full Bright","No Fog","FPS Boost","Reset UI"
+	}) do
+		toggle(v,y)
+		y+=35
+	end
+end
+
+-- CREATE TABS
+createTab("Aimbot",0,Aimbot)
+createTab("Visual",0.25,Visual)
+createTab("Misc",0.5,Misc)
+createTab("Main",0.75,MainTab)
+
+Aimbot()
+
+-- MINIMIZAR REAL
 local minimized = false
 mini.MouseButton1Click:Connect(function()
 	minimized = not minimized
-	main.Size = minimized and UDim2.new(0,200,0,35) or UDim2.new(0,500,0,400)
-	content.Visible = not minimized
+	
+	if minimized then
+		content.Visible = false
+		for _,v in pairs(main:GetChildren()) do
+			if v ~= top then v.Visible = false end
+		end
+		main.Size = UDim2.new(0,220,0,40)
+	else
+		content.Visible = true
+		for _,v in pairs(main:GetChildren()) do
+			v.Visible = true
+		end
+		main.Size = UDim2.new(0,520,0,420)
+	end
 end)
 
+-- FECHAR
 close.MouseButton1Click:Connect(function()
 	gui:Destroy()
-end)
-
--- ================= LOGIN LOGIC =================
-enterBtn.MouseButton1Click:Connect(function()
-	if keyBox.Text == "MGZ" then
-		login:Destroy()
-		main.Visible = true
-	else
-		notify("Key errada!")
-	end
 end)
